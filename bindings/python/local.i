@@ -366,6 +366,8 @@ SWIGPYTHON__CMP__(XMLOutputStream)
  * owned by that ListOf.
  */
 
+#if SWIG_VERSION > 0x030002
+
 %define TAKEOVER_OWNERSHIP(METHOD_NAME,ARG)
 %feature("pythonprepend")
 METHOD_NAME
@@ -374,22 +376,72 @@ METHOD_NAME
 %}
 %enddef
 
+#elif SWIG_VERSION > 0x010324
+
+%define TAKEOVER_OWNERSHIP(METHOD_NAME,ARG_INDEX)
+%feature("pythonprepend")
+METHOD_NAME
+%{
+        if args[ARG_INDEX] is not None: args[ARG_INDEX].thisown = 0
+%}
+%enddef
+
+#else
+
+%define TAKEOVER_OWNERSHIP(METHOD_NAME,ARG)
+%feature("pythonprepend")
+METHOD_NAME
+%{
+        if ARG is not None: ARG.thisown = 0
+%}
+%enddef
+
+#endif
+
 // ----------------------------------------------------------------------
 // ListOf
 // ----------------------------------------------------------------------
 
-TAKEOVER_OWNERSHIP(ListOf::appendAndOwn(SedBase*),item)
+
+#if SWIG_VERSION > 0x030002
+    TAKEOVER_OWNERSHIP(ListOf::appendAndOwn(SedBase*),item)
+#elif SWIG_VERSION > 0x010336
+    TAKEOVER_OWNERSHIP(ListOf::appendAndOwn(SedBase*),0)
+#elif SWIG_VERSION > 0x010324
+    TAKEOVER_OWNERSHIP(ListOf::appendAndOwn(SedBase*),1)
+#else
+    TAKEOVER_OWNERSHIP(ListOf::appendAndOwn(SedBase*),item)
+#endif
 
 // ----------------------------------------------------------------------
 // ASTNode
 // ----------------------------------------------------------------------
 
-TAKEOVER_OWNERSHIP(ASTNode::addChild(ASTNode*),disownedChild)
-TAKEOVER_OWNERSHIP(ASTNode::prependChild(ASTNode*),disownedChild)
-TAKEOVER_OWNERSHIP(ASTNode::insertChild(unsigned int, ASTNode*),disownedChild)
-TAKEOVER_OWNERSHIP(ASTNode::replaceChild(unsigned int, ASTNode*),disownedChild)
-TAKEOVER_OWNERSHIP(ASTNode::addSemanticsAnnotation(XMLNode*),disownedAnnotation)
-
+#if SWIG_VERSION > 0x030002
+    TAKEOVER_OWNERSHIP(ASTNode::addChild(ASTNode*),disownedChild)
+    TAKEOVER_OWNERSHIP(ASTNode::prependChild(ASTNode*),disownedChild)
+    TAKEOVER_OWNERSHIP(ASTNode::insertChild(unsigned int, ASTNode*),disownedChild)
+    TAKEOVER_OWNERSHIP(ASTNode::replaceChild(unsigned int, ASTNode*),disownedChild)
+    TAKEOVER_OWNERSHIP(ASTNode::addSemanticsAnnotation(XMLNode*),disownedAnnotation)
+#elif SWIG_VERSION > 0x010336
+    TAKEOVER_OWNERSHIP(ASTNode::addChild(ASTNode*),0)
+    TAKEOVER_OWNERSHIP(ASTNode::prependChild(ASTNode*),0)
+    TAKEOVER_OWNERSHIP(ASTNode::insertChild(unsigned int, ASTNode*),1)
+    TAKEOVER_OWNERSHIP(ASTNode::replaceChild(unsigned int, ASTNode*),1)
+    TAKEOVER_OWNERSHIP(ASTNode::addSemanticsAnnotation(XMLNode*),0)
+#elif SWIG_VERSION > 0x010324
+    TAKEOVER_OWNERSHIP(ASTNode::addChild(ASTNode*),1)
+    TAKEOVER_OWNERSHIP(ASTNode::prependChild(ASTNode*),1)
+    TAKEOVER_OWNERSHIP(ASTNode::insertChild(unsigned int, ASTNode*),2)
+    TAKEOVER_OWNERSHIP(ASTNode::replaceChild(unsigned int, ASTNode*),2)
+    TAKEOVER_OWNERSHIP(ASTNode::addSemanticsAnnotation(XMLNode*),1)
+#else
+    TAKEOVER_OWNERSHIP(ASTNode::addChild(ASTNode*),disownedChild)
+    TAKEOVER_OWNERSHIP(ASTNode::prependChild(ASTNode*),disownedChild)
+    TAKEOVER_OWNERSHIP(ASTNode::insertChild(unsigned int, ASTNode*),disownedChild)
+    TAKEOVER_OWNERSHIP(ASTNode::replaceChild(unsigned int, ASTNode*),disownedChild)
+    TAKEOVER_OWNERSHIP(ASTNode::addSemanticsAnnotation(XMLNode*),disownedAnnotation)
+#endif
 /**
  *
  * Wraps the SedConstructorException class (C++ exception defined by libSEDML) 
